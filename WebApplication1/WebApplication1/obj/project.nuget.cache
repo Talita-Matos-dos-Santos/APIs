@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "NPjStP30RJYHniCpzRClhN/su0c745udKSY/X4xEdw1unfjrVoDb6C/11IBI3pUc6U3W/YqNsp1I9sNrhukBHw==",
+  "success": true,
+  "projectFilePath": "/Users/talitamatos/Documents/C#/APIs/WebApplication1/WebApplication1/WebApplication1.csproj",
+  "expectedPackageFiles": [
+    "/Users/talitamatos/.nuget/packages/microsoft.extensions.apidescription.server/3.0.0/microsoft.extensions.apidescription.server.3.0.0.nupkg.sha512",
+    "/Users/talitamatos/.nuget/packages/microsoft.openapi/1.2.3/microsoft.openapi.1.2.3.nupkg.sha512",
+    "/Users/talitamatos/.nuget/packages/swashbuckle.aspnetcore/6.2.3/swashbuckle.aspnetcore.6.2.3.nupkg.sha512",
+    "/Users/talitamatos/.nuget/packages/swashbuckle.aspnetcore.swagger/6.2.3/swashbuckle.aspnetcore.swagger.6.2.3.nupkg.sha512",
+    "/Users/talitamatos/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.2.3/swashbuckle.aspnetcore.swaggergen.6.2.3.nupkg.sha512",
+    "/Users/talitamatos/.nuget/packages/swashbuckle.aspnetcore.swaggerui/6.2.3/swashbuckle.aspnetcore.swaggerui.6.2.3.nupkg.sha512"
+  ],
+  "logs": []
+}
