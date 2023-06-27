@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using APICatalogo.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -5,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers().AddJsonOptions(options=> options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles); //A parte do AddJson foi adicionada por mim para definir como o json deve lidar com referencias ciclicas na serializaçao. Nesse caso ele deve ignorar o objeto qnd detectar uma possivel referencia ciclica.
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

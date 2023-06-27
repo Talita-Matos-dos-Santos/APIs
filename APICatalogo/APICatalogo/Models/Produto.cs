@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace APICatalogo.Models;
 
@@ -32,6 +33,8 @@ public class Produto
     #endregion
 
     public int CategoriaId { get; set; }
+    
+    [JsonIgnore] //agr essa propriedade vai ser ignorada na serialização e desserialização (qnd for fazer uma requisição só em Produtos)
     public Categoria? Categoria { get; set; } //um produto esta relacionado com uma categoria
 
     
