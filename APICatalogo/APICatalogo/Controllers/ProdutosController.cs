@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace APICatalogo.Controllers;
 
-[Route("[controller]")]
+[Route("api/[controller]")] //Esse route define a base do endpoint que serão atendidos pelos métodos Action. A rota nesse caso foi definida com api + o nome do controlador, que é Produtos. Vai ficar /api/produtos. ESSA VAI SER A ROTA PADRÃO PRA ACESSAR TODOS OS ENDPOINTS DESSE CONTROLADOR pois ela está definida no inicio do controlador, como se estivesse sendo aplicada pra ProdutosController.
 [ApiController]
 public class ProdutosController : ControllerBase
 {
@@ -23,7 +23,7 @@ public class ProdutosController : ControllerBase
         _context = context;
     }
 
-    
+    //esse método vai atender acionando a URL /produtos, pois n tem nada adicional aq em relação a rota, e como ficou definido q o padrao é /api/produtos
     [HttpGet] //indica que esse método vai responder uma requisição get
     public ActionResult<IEnumerable<Produto>> Get()
     {
@@ -38,7 +38,10 @@ public class ProdutosController : ControllerBase
         return produtos;
     }
 
-    [HttpGet("{id:int}", Name = "ObterProduto")] //criei uma rota ObterProduto no método Post. Para acessar essa rota foi necessário adicionar esse Name aqui, que nada mais é que uma definição de uma rota nomeada. Ela diz que pra obter o produto pelo ID pode também usar e chamar a rota ObterProduto
+    //ja nesse metodo eu inclui um parametro Id (que é o id do produto que eu quero retornar). Esse parametro vai compor com a rota padrão definida no atributo ROUTE. 
+    //Logo, pra acessar aq tera a url /api/produtos/id.
+    //Agora eu coloquei uma restrição de rota. a rota so vai aceitar o id se ele for inteiro e se tiver um valor minimo de 1.
+    [HttpGet("{id:int:min(1)}", Name = "ObterProduto")] //criei uma rota ObterProduto no método Post. Para acessar essa rota foi necessário adicionar esse Name aqui, que nada mais é que uma definição de uma rota nomeada. Ela diz que pra obter o produto pelo ID pode também usar e chamar a rota ObterProduto
     public ActionResult<Produto> Get(int id)
     {
         //como nesse método get eu quero obter um produto pelo Id, entao eu tenho que passar o id no request. Pra isso vamos informar a recepção desse Id no atributo HttpGet
@@ -52,6 +55,7 @@ public class ProdutosController : ControllerBase
         return produto;
     }
 
+    //aq tbm ta padrao, n tem nada adicional. Portanto a rota será /api/produtos. Como o verbo é diferente do primeiro Get, msm tendo a mesma url que o Get nao tera nenhum problema. 
     [HttpPost]
     public ActionResult Post(Produto produto)
     {
@@ -78,7 +82,7 @@ public class ProdutosController : ControllerBase
         //Ou seja, agora ele recebo o produto no contexto, persiste no banco de dados, retorna 201 Create e aciona a rota ObterProduto (que ele vai usar o metodo Get com o Id do produto).
     }
 
-    [HttpPut("{id:int}")] //colocando o id aqui eu to definindo o template de rota: /produtos/{id}. Dessa forma o valor do id vai ser mapeado para o parametro do método Put abaixo  
+    [HttpPut("{id:int}")] //colocando o id aqui eu to definindo o template de rota: /api/produtos/{id}. Dessa forma o valor do id vai ser mapeado para o parametro do método Put abaixo  
     public ActionResult Put(int id, Produto produto)
     {
         //ao usar o http post é feita uma atualização completa, tenho que informar tooodos os dados aqui nesse objeto produto. Isso é considerado uma desvantagem dessa abordagem, pois mesmo que eu vá alterar só um campo eu preciso enviar todos os campos pra fazer uma unica alteraçao. 
