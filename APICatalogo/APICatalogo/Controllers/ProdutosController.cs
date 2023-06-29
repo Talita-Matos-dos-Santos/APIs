@@ -82,7 +82,7 @@ public class ProdutosController : ControllerBase
         //Ou seja, agora ele recebo o produto no contexto, persiste no banco de dados, retorna 201 Create e aciona a rota ObterProduto (que ele vai usar o metodo Get com o Id do produto).
     }
 
-    [HttpPut("{id:int}")] //colocando o id aqui eu to definindo o template de rota: /api/produtos/{id}. Dessa forma o valor do id vai ser mapeado para o parametro do método Put abaixo  
+    [HttpPut("{id:int:min(1)}")] //colocando o id aqui eu to definindo o template de rota: /api/produtos/{id}. Dessa forma o valor do id vai ser mapeado para o parametro do método Put abaixo  
     public ActionResult Put(int id, Produto produto)
     {
         //ao usar o http post é feita uma atualização completa, tenho que informar tooodos os dados aqui nesse objeto produto. Isso é considerado uma desvantagem dessa abordagem, pois mesmo que eu vá alterar só um campo eu preciso enviar todos os campos pra fazer uma unica alteraçao. 
@@ -108,7 +108,7 @@ public class ProdutosController : ControllerBase
         return Ok(produto); //coloca o status 200 e coloca os dados do produto q foram atualizados. 
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id:int:min(1)}")]
     public ActionResult Delete(int id)
     {
         var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
