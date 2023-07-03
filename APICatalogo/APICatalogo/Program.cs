@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using APICatalogo.Context;
+using APICatalogo.Extensions;
+using APICatalogo.Filters;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,8 @@ string mySqlConnectionStr = builder.Configuration.GetConnectionString("DefaultCo
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(mySqlConnectionStr, ServerVersion.AutoDetect(mySqlConnectionStr)));
+
+builder.Services.AddScoped<ApiLoggingFilter>(); //configurei o servico com addscoped, que garante que o serviço vai ser criado uma única vez por requisição, entao cada requisicao obtem uma nova instancia do nosso filtro.
 
 #region configurando contexto e string de conexao
 
@@ -37,10 +41,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.ConfigureExceptionHandler(); //adicionando o middleware de tratamento de erros 
 
-app.UseAuthorization();
+app.UseHttpsRedirection(); 
+
+app.UseAuthorization(); //esses que começam com use sao middlewares tbm, aq é um middleware de autorizaçao.
 
 app.MapControllers();
 
-app.Run();
+app.Run(); //os middlewares run significam que sao o final, é o ultimo q sera executado
