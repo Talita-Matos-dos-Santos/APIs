@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using APICatalogo.Context;
 using APICatalogo.Extensions;
 using APICatalogo.Filters;
+using APICatalogo.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +19,13 @@ string mySqlConnectionStr = builder.Configuration.GetConnectionString("DefaultCo
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(mySqlConnectionStr, ServerVersion.AutoDetect(mySqlConnectionStr)));
 
-builder.Services.AddScoped<ApiLoggingFilter>(); //configurei o servico com addscoped, que garante que o serviço vai ser criado uma única vez por requisição, entao cada requisicao obtem uma nova instancia do nosso filtro.
+//builder.Services.AddScoped<ApiLoggingFilter>(); //configurei o servico com addscoped, que garante que o serviço vai ser criado uma única vez por requisição, entao cada requisicao obtem uma nova instancia do nosso filtro.
+
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); //aq eu vou registrar a interface, indicando ela, e toda vez que eu precisar de uma implementação dessa interface, ela vai me dar uma instância da minha UnitOfWork
+//lembrando que: AddScoped - em uma aplicação web, CADA REQUEST cria um novo escopo de serviço separado.
+//fazendo esse registro da interface, o contêiner DI controla todos os serviços e eles são liberados e descartados quando a sua vida útil terminar. 
+
 
 #region configurando contexto e string de conexao
 
@@ -40,6 +47,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
 
 app.ConfigureExceptionHandler(); //adicionando o middleware de tratamento de erros 
 
