@@ -4,6 +4,7 @@ using System.Linq;
 using APICatalogo.Context;
 using APICatalogo.DTOs;
 using APICatalogo.Models;
+using APICatalogo.Pagination;
 using APICatalogo.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -52,10 +53,12 @@ public class ProdutosController : ControllerBase
     }
     
     [HttpGet] 
-    public ActionResult<IEnumerable<ProdutoDTO>> Get()
+    public ActionResult<IEnumerable<ProdutoDTO>> Get([FromQuery] ProdutosParameters produtosParameters)
     {
+        //fromquery significa que vou receber esse valor da querystring que fica na url/no endpoint de qnd faço a consulta
+        //https://localhost:7073/api/produtos?pageNumber=2&pageSize=2
         
-        var produtos = _uof.ProdutoRepository.Get().ToList(); //obtendo produtos sem nenhuma ordenacao especifica.
+        var produtos = _uof.ProdutoRepository.GetProdutos(produtosParameters).ToList(); //obtenho produtos ja paginados.
         var produtosDto = _mapper.Map<List<ProdutoDTO>>(produtos); //fazendo o mapeando dos produtos para uma lista de produtoDTO.
 
         return produtosDto;

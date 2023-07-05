@@ -1,5 +1,6 @@
 using APICatalogo.Context;
 using APICatalogo.Models;
+using APICatalogo.Pagination;
 
 namespace APICatalogo.Repository;
 
@@ -15,5 +16,20 @@ public class ProdutoRepository : Repository<Produto>, IProdutoRepository //herda
     {
         return Get().OrderBy(p => p.Preco).ToList(); //da um get e ordena eles pelo preco e retorna uma lista ordenada dessa forma. 
         //esse metodo Get() usado é o da class Repository.
+    }
+    
+    public IEnumerable<Produto> GetProdutos(ProdutosParameters produtosParameters) 
+    {
+        return Get()
+            .OrderBy(on => on.Nome)
+            .Skip((produtosParameters.PageNumber - 1) * produtosParameters.PageSize)
+            .Take(produtosParameters.PageSize)
+            .ToList();
+
+        #region skip e take
+
+        //tem explicaçao mto boa no pdf. Mas resumo do resumo: O método Skip é usado para pular uma determinada quantidade de produtos na lista. A quantidade de produtos pulados é calculada com base no número da página atual e no tamanho da página. Isso é útil para a paginação, onde você deseja exibir apenas uma parte dos resultados por vez.
+        //O método Take é usado para selecionar uma determinada quantidade de produtos da lista. A quantidade de produtos selecionados é definida pelo tamanho da página especificado nos parâmetros. Novamente, isso é útil para a paginação, onde você deseja exibir apenas uma quantidade limitada de resultados por página.
+        #endregion
     }
 }
