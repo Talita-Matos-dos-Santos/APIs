@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using APICatalogo.Context;
+using APICatalogo.DTOs;
 using APICatalogo.Models;
 using APICatalogo.Repository;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,73 +17,86 @@ namespace APICatalogo.Controllers
     [ApiController]
     public class CategoriasController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly IUnitOfWork _uof;
 
-        public CategoriasController(IUnitOfWork context)
+        public CategoriasController(IUnitOfWork context, IMapper mapper)
         {
             _uof = context;
+            _mapper = mapper;
         }
 
-        [HttpGet("produtos")] //pra caracterizar esse endpoint vms definir aq uma rota. Pra acessar esse endpoint vou ter que informar o nome do controlador (que é categorias) e /produtos, ai ele vai chegar aq. Se eu não fizesse isso aq teriamos um problema, pois teria 2 endpoints de httpGet com a mesma rota, que é o metodo imediatamente abaixo desse e esse aq. 
-        public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
+        [HttpGet("produtos")] 
+        public ActionResult<IEnumerable<CategoriaDTO>> GetCategoriasProdutos()
         {
-            
-            return _uof.CategoriaRepository.GetCategoriasProdutos().ToList(); //vai obter a categoria e junto com ela tbm vai carregar os produtos dessa categoria. lembrando q por padrao nao carregaria -> isso é antigo, mas segue a msm logica, so q agr essa logica (do include) ta no categoriarepository
+            var categorias = _uof.CategoriaRepository.GetCategoriasProdutos().ToList();
+            var categoriasDto = _mapper.Map<List<CategoriaDTO>>(categorias);
+            return categoriasDto;
         }
         
-        [HttpGet] //como n to colocando nada aq de rota, esse get aq vai atender ao endpoint "/categorias" somente, pois o [Route("controller")] define isso. O endpoint inicial é o nome do controlador, que nesse caso aqui é CategoriasController, só que o sufixo Controller é ignorado.
-        public ActionResult<IEnumerable<Categoria>> Get()
+        [HttpGet] 
+        public ActionResult<IEnumerable<CategoriaDTO>> Get()
         {
-            var categorias = _uof.CategoriaRepository.Get().ToList(); 
+            var categorias = _uof.CategoriaRepository.Get().ToList();
             if (categorias is null)
             {
                 return NotFound("Categorias não encontrados!");
             }
-            return categorias;
+            var categoriasDto = _mapper.Map<List<CategoriaDTO>>(categorias);
+            return categoriasDto;
 
         }
 
-        [HttpGet("{id:int}", Name = "ObterCategoria")] //ja defini a rota nomeada ObterCategoria q eu vou usar qnd criar o Post
-        public ActionResult<Categoria> Get(int id)
+        [HttpGet("{id:int}", Name = "ObterCategoria")]
+        public ActionResult<CategoriaDTO> Get(int id)
         {
             var categoria = _uof.CategoriaRepository.GetById(p => p.CategoriaId == id);
             if (categoria == null)
             {
                 return NotFound("Categoria não encontrada!");
             }
-            return Ok(categoria);
+
+            var categoriaDto = _mapper.Map<CategoriaDTO>(categoria);
+            return Ok(categoriaDto);
         }
 
         [HttpPost]
-        public ActionResult Post(Categoria categoria)
+        public ActionResult Post(CategoriaDTO categoriaDto)
         {
-            if (categoria is null)
+            if (categoriaDto is null)
             {
                 return BadRequest();
             }
 
+            var categoria = _mapper.Map<Categoria>(categoriaDto);
+            
             _uof.CategoriaRepository.Add(categoria);
             _uof.Commit();
 
-            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoria); //retorno 201 created e chamo ObterCategoria passando id da categoria que foi recem criada e ele vai me retornar a categoria que eu acabei de adicionar.
+            var categoriaDTO = _mapper.Map<CategoriaDTO>(categoria); //note que essa categoriaDTO não é a msm de categoriaDto. 
+
+            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoriaDTO); 
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Categoria categoria)
+        public ActionResult Put(int id, CategoriaDTO categoriaDto)
         {
-            if (id != categoria.CategoriaId)
+            if (id != categoriaDto.CategoriaId)
             {
                 return BadRequest();
             }
             
+            var categoria = _mapper.Map<Categoria>(categoriaDto);
+            
             _uof.CategoriaRepository.Update(categoria);
             _uof.Commit();
 
-            return Ok(categoria); //e retornar a categoria
+            var categoriaDTO = _mapper.Map<CategoriaDTO>(categoria);
+            return Ok(categoriaDTO); 
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public ActionResult<CategoriaDTO> Delete(int id)
         {
             var categoria = _uof.CategoriaRepository.GetById(p => p.CategoriaId == id);
             if (categoria == null)
@@ -92,7 +107,8 @@ namespace APICatalogo.Controllers
             _uof.CategoriaRepository.Delete(categoria);
             _uof.Commit();
 
-            return Ok(categoria);
+            var categoriaDTO = _mapper.Map<CategoriaDTO>(categoria);
+            return Ok(categoriaDTO);
         }
     }
 }

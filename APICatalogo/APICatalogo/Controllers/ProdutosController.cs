@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using APICatalogo.Context;
+using APICatalogo.DTOs;
 using APICatalogo.Models;
 using APICatalogo.Repository;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,48 +31,34 @@ public class ProdutosController : ControllerBase
     } 
      */
     #endregion
-    
-    
-    //vms substituir as instancias de appdbcontext para as instancias do unitofwork. Com isso vamos acessar os respectivod repositorios e em cada método dos controladores vms fazer os ajustes necessários. 
+
+    private readonly IMapper _mapper; //pegando uma instancia do automapper e colocando em uma variavel
     private readonly IUnitOfWork _uof;
-    public ProdutosController(IUnitOfWork context)
+    public ProdutosController(IUnitOfWork context, IMapper mapper)
     {
+        //fazendo uma injecao de dependencia e obtendo a instancia injetada na variavel _mapper.
         _uof = context;
+        _mapper = mapper;
     }
 
     [HttpGet("menorpreco")]
-    public ActionResult<IEnumerable<Produto>> GetProdutosPrecos()
+    public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosPrecos()
     {
-        return _uof.ProdutoRepository.GetProdutosPorPreco().ToList(); //retorna os produtos ordenados do menor preco pro maior.
+        var produtos = _uof.ProdutoRepository.GetProdutosPorPreco().ToList(); //obtendo todos os produtos ordenados por preço atraves do meu repositorio usando uma instancia de unitofwork.
+        
+        var produtosDto = _mapper.Map<List<ProdutoDTO>>(produtos); //aq eu vou fazer o mapeamento que define o Dto que eu quero exibir. Aqui mapeamos produtos para uma lista de ProdutoDTO. 
+        
+        return produtosDto;
     }
     
-    //esse método vai atender acionando a URL /produtos, pois n tem nada adicional aq em relação a rota, e como ficou definido q o padrao é /api/produtos
-    [HttpGet] //indica que esse método vai responder uma requisição get
-    public ActionResult<IEnumerable<Produto>> Get()
+    [HttpGet] 
+    public ActionResult<IEnumerable<ProdutoDTO>> Get()
     {
-        //O metodo async foi retirado daqui pois o unitofwork foi feito no metodo sincrono, entao pra nao ter problema...
-        #region Usar ou não o método assíncrono?
-        //Como estamos acessando o SGBD e isso é uma operação que não depende da minha aplicação, então a utilizaçao do assincronismo se justifica. O assincronismo é util para melhorar a experiência do usuário quando há alguma operação que demanda muito tempo para ser executada.
-        //O ganho que ele dá é a execução em paralelo, assim você pode atender mais requisições 
-        //A requisição específica não ficará mais rápida em hipótese alguma 
-        #endregion
-        #region async e await - explicação
-        //a palavra async indica q é um método assincrono. a palavra await está indicando que nós queremos aguardar essa operaçao, enquanto isso os recursos usados para processar essa requisição poderão ser usados para processar outras requisições, enquanto essa operaçao (_context.Produtos.AsNoTracking().ToListAsync()) não terminar. 
-        #endregion
+        
+        var produtos = _uof.ProdutoRepository.Get().ToList(); //obtendo produtos sem nenhuma ordenacao especifica.
+        var produtosDto = _mapper.Map<List<ProdutoDTO>>(produtos); //fazendo o mapeando dos produtos para uma lista de produtoDTO.
 
-        var produtos = _uof.ProdutoRepository.Get().ToList(); //uso a instancia de uof q foi injetada, entro no repositorio do controller q eu to, uso o metodo do repository necessário. Nesse caso é o Get(). Lembrando q produtorepository implementa o repository.
-        if (produtos is null)
-        {
-            return NotFound("Produtos não encontrados!");
-
-            #region explicaçao sobre o tipo de retorno desse metodo
-
-            //esse notfound vem da classe abstrata ControllerBase
-            //o tipo de retorno q tava esperando é ienumerable de produto. Pra resolver isso usamos o tipo actionresult pra poder retornar tanto action qnt a lista. O Action não retorna nada em específico. Agora, eu posso retornar ou uma lista ou todos os métodos pertencentes aos tipos de retorno suportados pelo Action.
-            #endregion
-             
-        }
-        return produtos;
+        return produtosDto;
     }
 
     #region explicação sobre roteamento
@@ -83,7 +71,7 @@ public class ProdutosController : ControllerBase
     #region explicação sobre ObterProduto
     //criei uma rota ObterProduto no método Post. Para acessar essa rota foi necessário adicionar esse Name aqui, que nada mais é que uma definição de uma rota nomeada. Ela diz que pra obter o produto pelo ID pode também usar e chamar a rota ObterProduto
     #endregion
-    public ActionResult<Produto> Get(int id) 
+    public ActionResult<ProdutoDTO> Get(int id) 
     {
         #region QueryString e Get antigo
         //nesse exemplo, o id que vai entrar como parâmetro é o da cadeia de consulta(querystring), mas mesmo assim é necessário informar o id. Supondo que quero o produto com id == 1, ent eu teria que usar a URL -> /api/produtos/1?id=2 -> ele vai trazer o id == 2 pro parametro, pois assim eu defini quando coloquei [FromQuery]
@@ -91,38 +79,42 @@ public class ProdutosController : ControllerBase
         //como nesse método get eu quero obter um produto pelo Id, entao eu tenho que passar o id no request. Pra isso vamos informar a recepção desse Id no atributo HttpGet
         #endregion
 
-        var produto = _uof.ProdutoRepository.GetById(p => p.ProdutoId == id); 
-        if (produto is null)
+        var produto = _uof.ProdutoRepository.GetById(p => p.ProdutoId == id);
+        var produtoDto = _mapper.Map<ProdutoDTO>(produto); //lembrando que aqui não é uma lista. é um unico produto
+        if (produtoDto is null)
         {
             return NotFound("Produto não encontrado!");
         }
 
-        return produto;
+        return produtoDto;
     }
-
-    //aq tbm ta padrao, n tem nada adicional. Portanto a rota será /api/produtos. Como o verbo é diferente do primeiro Get, msm tendo a mesma url que o Get nao tera nenhum problema. 
+    
     [HttpPost]
-    public ActionResult Post(Produto produto)
+    public ActionResult Post(ProdutoDTO produtoDto)
     {
         #region explicações
         //ao colocar só o actionresult eu não vou retornar um tipo. Com isso estou indicando para retornar apenas as mensagens de status HTTP
         //um objeto do tipo Produto vai vir através do Body da requisição. 
         //com a introdução do atributo [ApiController] no inicio dessa api não é mais necessário colocar ([FromBody] Produto produto) e a validação do modelo tbm não é necessária. Já é feito automaticamente. 
         #endregion
+        //agr as informações recebidas no corpo da requisição de Post será de ProdutoDTO. 
+        //toda vez q eu for trabalhar com banco de dados eu tenho que trabalhar com Produto, não com ProdutoDTO.
+        var produto = _mapper.Map<Produto>(produtoDto); //aqui ta mapeando o produtoDto que ele recebeu para o produto, com as informações de produto completa.
+
+        _uof.ProdutoRepository.Add(produto); //com as informaçoes de produto completa eu posso incluir no contexto, usando o repositorio 
+        _uof.Commit(); //dou commit no banco de dados
         
-        _uof.ProdutoRepository.Add(produto); //uso o metodo Add do repositorio. Toda a logica desse metodo esta em Repository, sendo que repository é implementado por produtorepository
-        _uof.Commit(); //esse metodo commit é do unitofwork
         #region explicaçao sobre add produto no contexto - antigo
 
         //como estamos usando o contexto do EF eu tenho que incluir essa informação (que um produto ta sendo adicionado) no contexto, já que estamos trabalhando no modo desconectado. o método Add() vai incluir esse produto no contexto. 
         //Até o momento estamos trabalhando na memória. Para persistir essa informações no SGBD, usamos o método SaveChanges(). Ou seja, com o SaveChange() os dados vão pra tabela, se nao fica so na memoria.
         #endregion
         
-        
-        //o tipo de retorno que é recomendado retornar pro método POST é o código de status HTTP 201 Create. Pra isso colocamos no cabeçalho location da resposta http a URL do novo recurso.
+        //a parte diferente da antiga ta aq. Eu tenho que exibir pro usuário não um produto, mas um produtoDTO
+        var produtoDTO = _mapper.Map<ProdutoDTO>(produto); //agr eu faço o mapeamento do produto que eu recebi para produtoDTO. Note que esse produtoDTO não é o mesmo do produtoDto acima.
 
         return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId },
-            produto); 
+            produtoDTO); 
         #region explicações
         //retorna um código de estado http 201 em caso de êxito. Vai adicionar um cabeçalho location à resposta e ele vai especificar a URI para obter esse produto que acabou de ser incluído. 
         
@@ -131,7 +123,7 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpPut("{id:int:min(1)}")] //colocando o id aqui eu to definindo o template de rota: /api/produtos/{id}. Dessa forma o valor do id vai ser mapeado para o parametro do método Put abaixo  
-    public ActionResult Put(int id, Produto produto)
+    public ActionResult Put(int id, ProdutoDTO produtoDto)
     {
         #region explicações do que acontece nesse método - antigo
 
@@ -146,13 +138,17 @@ public class ProdutosController : ControllerBase
         //qnd enviar os dados do Produto tbm vou ter q informar o id do produto
         #endregion
         
-        if (id != produto.ProdutoId)
+        if (id != produtoDto.ProdutoId)
         {
-            //verifica se o id que eu to informando como parametro é diferente do produtoId q eu to passando no body request
             return BadRequest(); //codigo status 400
         }
+
+        var produto = _mapper.Map<Produto>(produtoDto);
+            //dps que eu fiz a verificação se o produtoid do produtoDto é diferente do id que entrou pelo roteamento, antes de atualizar as tabelas do banco de dados eu vou ter que mapear de produtoDto para produto.
+            //SEMPRE que for fazer qualquer modificação(post, put, delete) no banco de dados, usa-se produto, não produtoDto.
         
-        _uof.ProdutoRepository.Update(produto); //note que o entry etc está tudo implementado no proprio update do repository, q é uma classe herdada pelo produtorepository
+        
+        _uof.ProdutoRepository.Update(produto); 
         _uof.Commit(); 
         
         #region estado modificado - Entry - antigo
@@ -162,11 +158,12 @@ public class ProdutosController : ControllerBase
         //uso a instancia do contexto, o metodo entry passando qual o objeto e vou definir que seu estado vai estar sendo modificado. Com isso, o EF vai saber que essa entidade precisa ser persistida. 
         #endregion
 
-        return Ok(produto); //coloca o status 200 e coloca os dados do produto q foram atualizados. 
+        var produtoDTO = _mapper.Map<ProdutoDTO>(produto);
+        return Ok(produtoDTO); 
     }
 
     [HttpDelete("{id:int:min(1)}")]
-    public ActionResult Delete(int id)
+    public ActionResult<ProdutoDTO> Delete(int id)
     {
         var produto = _uof.ProdutoRepository.GetById(p => p.ProdutoId == id);
         if (produto is null)
@@ -177,7 +174,8 @@ public class ProdutosController : ControllerBase
         _uof.ProdutoRepository.Delete(produto);
         _uof.Commit();
 
-        return Ok(produto); //retorna 200 e o produto q foi excluído
+        var produtoDto = _mapper.Map<ProdutoDTO>(produto);
+        return Ok(produtoDto); //retorna 200 e o produto q foi excluído
     }
 
 }
