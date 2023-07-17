@@ -1,8 +1,11 @@
 using APICatalogo.Models;
+using APICatalogo.Pagination;
 
 namespace APICatalogo.Repository;
 
 public interface ICategoriaRepository : IRepository<Categoria>
 {
-    IEnumerable<Categoria> GetCategoriasProdutos(); //vai me retornar os produtos por categoria. Vou obter as categorias e os produtos das categorias. 
+    PagedList<Categoria> GetCategorias(CategoriasParameters categoriasParameters); //vai me retornar os produtos por categoria. Vou obter as categorias e os produtos das categorias. 
+
+    IEnumerable<Categoria> GetCategoriasProdutos();
 }

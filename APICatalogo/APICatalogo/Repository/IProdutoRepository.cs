@@ -10,6 +10,7 @@ public interface IProdutoRepository : IRepository<Produto>
     //alem da inclusao, exclusao, update e consultas eu tenho um metodo especifico para obter os produtos pelo preco dos produtos
     IEnumerable<Produto> GetProdutosPorPreco();
 
-    IEnumerable<Produto> GetProdutos(ProdutosParameters produtosParameters); //metodo para realizar a paginacao. trata e recebe os produtosparameters
+    PagedList<Produto> GetProdutos(ProdutosParameters produtosParameters); 
+    //Antes retornava um IEnumerable de produto, agr será um PagedList de produto, pq é nele que eu vou atribuir valores para as novas propriedades e a paginação. 
 
 }

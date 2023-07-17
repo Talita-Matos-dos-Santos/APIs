@@ -10,6 +10,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace APICatalogo.Controllers;
 
@@ -58,7 +59,22 @@ public class ProdutosController : ControllerBase
         //fromquery significa que vou receber esse valor da querystring que fica na url/no endpoint de qnd faço a consulta
         //https://localhost:7073/api/produtos?pageNumber=2&pageSize=2
         
-        var produtos = _uof.ProdutoRepository.GetProdutos(produtosParameters).ToList(); //obtenho produtos ja paginados.
+        var produtos = _uof.ProdutoRepository.GetProdutos(produtosParameters); //obtenho produtos ja paginados. aq nao precisou mais do tolist, nao entendi exatamente o porquê, mas o metadata abaixo so funcionou qnd tirei o tolist. Talvez seja pq produtos tem q ser pagedlist pra eu poder usar as propriedades de pagedlist.
+
+        //abaixo eu crio um objeto de tipo anonimo com os 
+        var metadata = new
+        {
+            produtos.TotalCount,
+            produtos.PageSize,
+            produtos.CurrentPage,
+            produtos.TotalPages,
+            produtos.HasNext,
+            produtos.HasPrevious
+        };
+        
+        Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata)); //Já tendo essas informações salvas na variável metadata, aí eu vou incluir essas informações no Header do Response. Na chave vou adicionar o "x-pagination" e no valor eu vou serializar os dados do tipo anônimo para uma string JSON e vou incluir no Header do response. 
+        
+        
         var produtosDto = _mapper.Map<List<ProdutoDTO>>(produtos); //fazendo o mapeando dos produtos para uma lista de produtoDTO.
 
         return produtosDto;
