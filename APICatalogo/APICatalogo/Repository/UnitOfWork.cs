@@ -35,10 +35,13 @@ public class UnitOfWork : IUnitOfWork
         }
     } 
     
-    public void Commit()
+    public async Task Commit()
     {
         //aq implementa oq tem no IUnit
-        _context.SaveChanges(); //o savechanges vai persistir as informacoes no banco de dados 
+        await _context.SaveChangesAsync(); //o savechanges vai persistir as informacoes no banco de dados 
+        
+        ////antes era void, agr é task. Qnd eu chamar o savechangesasync isso deve ser feito de forma assincrona, pois é o savechanges que vai la no banco de dados persistir os dados, entao é essa operacao que deve ser assincrona. 
+        //o Add, update e delete nao vao no sgbd, por isso nao fizemos alteracoes nesses metodos (em irepository).
     }
 
     public void Dispose()

@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace APICatalogo.Pagination;
 
 public class PagedList<T> : List<T>
@@ -29,7 +31,7 @@ public class PagedList<T> : List<T>
         AddRange(items); //incluindo os items na lista
     }
 
-    public static PagedList<T> ToPagedList(IQueryable<T> source, int pageNumber, int pageSize)
+    public async static Task<PagedList<T>> ToPagedList(IQueryable<T> source, int pageNumber, int pageSize)
     {
         //nesse metodo eu passo as informacoes da fonte de dados( source = get(), pelo q entendi ), do pagenumber e pagesize.
         
@@ -37,7 +39,8 @@ public class PagedList<T> : List<T>
         var count = source.Count();
         
         //abaixo é feito a paginação em si:
-        var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList(); 
+        var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(); //acho que o fato de estar indo ao SGBD é um ponto importante pra se decidir fazer de forma assincrona. 
+        
         #region TAKE E SKIP
         //skip pagenumber - 1 * pageSize -> pule todas as paginas - 1 (1 = pagina q eu to nao é pra pular) -> supondo pagenumber = 3, e pagesize = 10 -> (3 - 1) * 10 -> pule 2 * 10 = 20. Ou seja, é pra pular os 20 primeiros registros, sendo q tem 10 registros por pagina e que temos 3 paginas e eu vou pular tds menos a que eu to agora, entao vou pular 2 paginas. 2 paginas de 10 registros cada.
         //take(pageSize) -> pega a qntdd de items (10) e coloca em uma pagina, a que eu to agr.

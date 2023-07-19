@@ -22,12 +22,14 @@ public class Repository<T> : IRepository<T> where T : class//o T é um tipo que 
         //AsNoTracking foi utilizado pois como é uma consulta eu quero desabilitar o rastreamento de entidades, aumentando o desempenho.
     }
 
-    public T GetById(Expression<Func<T, bool>> predicate)
+    public async Task<T> GetById(Expression<Func<T, bool>> predicate)
     {
-        return _context.Set<T>().SingleOrDefault(predicate);
-        //retorna uma entidade do tipo T
+        return await _context.Set<T>().AsNoTracking().SingleOrDefaultAsync(predicate);
         //temos o delegate func como parametro de entrada e sera usada uma expressao lambda do tipo para comparar o id do produto ou categoria como criterio.
         //o predicate é pra validar o criterio, se ele é false ou true
+        
+        //agora esse metodo é assincrono.
+        //retorna um task<t>
     }
 
     public void Add(T entity)

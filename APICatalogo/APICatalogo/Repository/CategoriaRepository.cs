@@ -12,12 +12,13 @@ public class CategoriaRepository : Repository<Categoria>, ICategoriaRepository
         
     }
 
-    public IEnumerable<Categoria> GetCategoriasProdutos()
+    public async Task<IEnumerable<Categoria>> GetCategoriasProdutos()
     {
-        return Get().Include(x => x.Produtos); //obtenho todas as categorias e incluo os produtos dessa categoria
+        return await Get().Include(x => x.Produtos).ToListAsync(); //obtenho todas as categorias e incluo os produtos dessa categoria
+        //agr é assincrono
     }
 
-    public PagedList<Categoria> GetCategorias(CategoriasParameters categoriasParameters)
+    public async Task<PagedList<Categoria>> GetCategorias(CategoriasParameters categoriasParameters)
     {
         
             //return Get()
@@ -32,7 +33,7 @@ public class CategoriaRepository : Repository<Categoria>, ICategoriaRepository
             //O método Take é usado para selecionar uma determinada quantidade de produtos da lista. A quantidade de produtos selecionados é definida pelo tamanho da página especificado nos parâmetros. Novamente, isso é útil para a paginação, onde você deseja exibir apenas uma quantidade limitada de resultados por página.
             #endregion
 
-            return PagedList<Categoria>.ToPagedList(Get()
+            return await PagedList<Categoria>.ToPagedList(Get()
                     .OrderBy(c => c.CategoriaId),
                 categoriasParameters.PageNumber,
                 categoriasParameters.PageSize);
