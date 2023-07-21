@@ -9,6 +9,8 @@ using APICatalogo.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -76,6 +78,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:key"]))
     }); //toda vez que chegar uma requisicao com o token vai ser feita essa verificacao pra validar.
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified =
+        true; //define que vai assumir a versao padrao quando nenhuma versao for informada pelo cliente
+    options.DefaultApiVersion = new ApiVersion(1, 0); //define qual é a versao padrao 
+    options.ReportApiVersions =
+        true; //permite informar no responde do request a informaçao de compatibilidade de versao
+    
+});
 
 
 

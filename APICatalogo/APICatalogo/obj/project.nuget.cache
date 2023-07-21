@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "tkW1weJqgL+TNybFz65tMX1Iwlgh3QbXv9ap9LCD43HmqPRDAN3iVDDxow1YOWFACDXKWwHvY7piMo0dtSDDFA==",
+  "dgSpecHash": "nRFQivtjQCFKAdjkrwfTj938Lu9xssPg/ZAAXz3Q6Xt8Sk8FHeum33VKc0V5qjaqr4A/O1fwpt5TJck1Y525JA==",
   "success": true,
   "projectFilePath": "/Users/talitamatos/Documents/C#/APIs/APICatalogo/APICatalogo/APICatalogo.csproj",
   "expectedPackageFiles": [
@@ -63,6 +63,8 @@
     "/Users/talitamatos/.nuget/packages/microsoft.aspnetcore.cryptography.internal/6.0.20/microsoft.aspnetcore.cryptography.internal.6.0.20.nupkg.sha512",
     "/Users/talitamatos/.nuget/packages/microsoft.aspnetcore.cryptography.keyderivation/6.0.20/microsoft.aspnetcore.cryptography.keyderivation.6.0.20.nupkg.sha512",
     "/Users/talitamatos/.nuget/packages/microsoft.aspnetcore.identity.entityframeworkcore/6.0.20/microsoft.aspnetcore.identity.entityframeworkcore.6.0.20.nupkg.sha512",
+    "/Users/talitamatos/.nuget/packages/microsoft.aspnetcore.mvc.versioning/5.1.0/microsoft.aspnetcore.mvc.versioning.5.1.0.nupkg.sha512",
+    "/Users/talitamatos/.nuget/packages/microsoft.aspnetcore.mvc.versioning.apiexplorer/5.1.0/microsoft.aspnetcore.mvc.versioning.apiexplorer.5.1.0.nupkg.sha512",
     "/Users/talitamatos/.nuget/packages/microsoft.aspnetcore.razor.language/6.0.0/microsoft.aspnetcore.razor.language.6.0.0.nupkg.sha512",
     "/Users/talitamatos/.nuget/packages/microsoft.bcl.asyncinterfaces/5.0.0/microsoft.bcl.asyncinterfaces.5.0.0.nupkg.sha512",
     "/Users/talitamatos/.nuget/packages/microsoft.build/17.3.2/microsoft.build.17.3.2.nupkg.sha512",
