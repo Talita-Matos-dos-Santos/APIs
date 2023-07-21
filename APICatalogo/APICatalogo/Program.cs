@@ -1,3 +1,5 @@
+using System.Configuration;
+using System.Text;
 using System.Text.Json.Serialization;
 using APICatalogo.Context;
 using APICatalogo.DTOs.Mappings;
@@ -5,7 +7,11 @@ using APICatalogo.Extensions;
 using APICatalogo.Filters;
 using APICatalogo.Repository;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,12 +23,61 @@ builder.Services.AddControllers().AddJsonOptions(options=> options.JsonSerialize
 
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c=>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo{Title = "ApiCatalogo", Version = "v1"});
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Header de autorização JWT usando o esquema Bearer. \r\n\r\nInforme: 'Bearer:'[espaço] e o seu token.\r\n\r\bExemplo: \'Bearer: 12345abcdef\'"
+    }); //aq definimos o esquema de segurança. Esses atributos ai foram tirados da documentaçao do proprio swagger
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme()
+            {
+                Reference = new OpenApiReference()
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                    //aq estao os requerimentos, que é so que o security deve ser scheme e o id bearer
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 string mySqlConnectionStr = builder.Configuration.GetConnectionString("DefaultConnection"); //defaultconnection é o nome da string de conexao que eu defini no appsettings.json
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(mySqlConnectionStr, ServerVersion.AutoDetect(mySqlConnectionStr)));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders(); //esse codigo habilita o Identity no meu projeto. Dps daq eu vou incluir os middlewares de autenticacao e de autorizacao
+
+//JWT
+//adiciona o manipulador de autenticacao e define o esquema de autenticacao usado: Bearer
+//valida o emissor, a audiencia e a chave
+//usando a chave secreta, valida a assinatura
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidAudience = builder.Configuration["TokenConfiguration:Audience"],
+        ValidIssuer = builder.Configuration["TokenConfiguration:Issuer"],
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:key"]))
+    }); //toda vez que chegar uma requisicao com o token vai ser feita essa verificacao pra validar.
+
+
 
 //builder.Services.AddScoped<ApiLoggingFilter>(); //configurei o servico com addscoped, que garante que o serviço vai ser criado uma única vez por requisição, entao cada requisicao obtem uma nova instancia do nosso filtro.
 
@@ -66,8 +121,10 @@ if (app.Environment.IsDevelopment())
 
 app.ConfigureExceptionHandler(); //adicionando o middleware de tratamento de erros 
 
-app.UseHttpsRedirection(); 
+app.UseHttpsRedirection(); //middleware para redirecionar para https
 
+app.UseRouting(); //n sei pq motivo se ele nao disse, mas tive que add isso aq. O migration so funcionou qnd coloquei ele. Antes parece que tava alegando algum problema com o AddEntityFrameworkStores
+app.UseAuthentication(); 
 app.UseAuthorization(); //esses que começam com use sao middlewares tbm, aq é um middleware de autorizaçao.
 
 app.MapControllers();

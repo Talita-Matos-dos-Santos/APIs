@@ -1,9 +1,10 @@
 using APICatalogo.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace APICatalogo.Context;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext //acho q esse identity vai me fornecer aquelas tabelas aspnetroles,aspnetuser e bla
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {

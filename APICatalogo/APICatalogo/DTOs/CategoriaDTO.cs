@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace APICatalogo.DTOs;
 
 public class CategoriaDTO

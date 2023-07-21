@@ -8,6 +8,8 @@ using APICatalogo.Models;
 using APICatalogo.Pagination;
 using APICatalogo.Repository;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,8 @@ using Newtonsoft.Json;
 
 namespace APICatalogo.Controllers
 {
+    //[Authorize(AuthenticationSchemes = "Bearer")] //sem colocar isso aq qualquer um vai poder fazer requisicoes pra minha api de categoria
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] //na aula de swagger ele mostrou q tava assim, mas em momento nenhum anteriormente ele tinha colocado
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriasController : ControllerBase
@@ -77,21 +81,17 @@ namespace APICatalogo.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post(CategoriaDTO categoriaDto)
+        public async Task<ActionResult> Post([FromBody]CategoriaDTO categoriaDto)
         {
-            if (categoriaDto is null)
-            {
-                return BadRequest();
-            }
-
+            
             var categoria = _mapper.Map<Categoria>(categoriaDto);
             
             _uof.CategoriaRepository.Add(categoria);
             await _uof.Commit();
 
-            var categoriaDTO = _mapper.Map<CategoriaDTO>(categoria); //note que essa categoriaDTO não é a msm de categoriaDto. 
+            var cat = _mapper.Map<CategoriaDTO>(categoria); 
 
-            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoriaDTO); 
+            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, cat); 
         }
 
         [HttpPut("{id:int}")]

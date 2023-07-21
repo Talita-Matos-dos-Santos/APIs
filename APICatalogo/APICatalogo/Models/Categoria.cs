@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Newtonsoft.Json;
 
 namespace APICatalogo.Models;
 
@@ -15,6 +16,8 @@ public class Categoria
     [Required] //o campo é obrigatório
     [StringLength(300)] //tamanho maximo padrao de 300
     public string? ImagemUrl { get; set; }
+    
+    [JsonIgnore]
     public ICollection<Produto>? Produtos { get; set; } //uma categoria pode ter muitos produtos. Eu acho que a classe q tem o ICollection é tida como a classe principal. 
     
     public Categoria()
@@ -22,6 +25,4 @@ public class Categoria
         Produtos = new Collection<Produto>();
         //é responsabilidade de classe de onde vc define a propriedade do tipo coleção, inicializar essa coleção.
     }
-    
-    
 }
