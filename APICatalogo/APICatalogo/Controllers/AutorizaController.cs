@@ -15,6 +15,7 @@ using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegiste
 
 namespace APICatalogo.Controllers
 {
+    [Produces("application/json")] //define que o formato do retorno será esse la no swagger. Antes de colocar ficavam outras opcoes tbm, como text/plain e text/json
     [Route("api/[controller]")]
     [ApiController]
     public class AutorizaController : ControllerBase
@@ -38,7 +39,13 @@ namespace APICatalogo.Controllers
             return "AutorizaController :: Acesso em : " + DateTime.Now.ToLongDateString();
             //serve so pra verificar se essa api ta atendendo. Manda a data q foi acessada tbm
         }
-
+        
+        ///<summary>
+        /// Registra um novo usuário
+        /// </summary>
+        ///<param name="model">Um objeto UsuarioDTO</param>
+        /// <returns>Status 200 e o token para o cliente</returns>
+        /// 
         [HttpPost("register")]
         public async Task<ActionResult> RegisterUser([FromBody] UsuarioDTO model)
         {
@@ -70,6 +77,13 @@ namespace APICatalogo.Controllers
             //ou seja, o metodo registra/cria o usuario e retorna um 200 ok
         }
 
+        ///<summary>
+        /// Verifica as credenciais de um usuário
+        /// </summary>
+        ///<param name="userInfo">Um objeto do tipo UsuarioDTO</param>
+        /// <returns>Status 200 e o token para o cliente</returns>
+        /// <remarks>retorna o Status 200 e o token para o cliente</remarks>
+        /// 
         [HttpPost("login")]
         public async Task<ActionResult> Login([FromBody] UsuarioDTO userInfo)
         {

@@ -1,4 +1,5 @@
 using System.Configuration;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using APICatalogo.Context;
@@ -25,33 +26,58 @@ builder.Services.AddControllers().AddJsonOptions(options=> options.JsonSerialize
 
 
 builder.Services.AddEndpointsApiExplorer();
+
+//registra o gerador swagger definindo um ou mais documentos
 builder.Services.AddSwaggerGen(c=>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo{Title = "ApiCatalogo", Version = "v1"});
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Header de autorização JWT usando o esquema Bearer. \r\n\r\nInforme: 'Bearer:'[espaço] e o seu token.\r\n\r\bExemplo: \'Bearer: 12345abcdef\'"
-    }); //aq definimos o esquema de segurança. Esses atributos ai foram tirados da documentaçao do proprio swagger
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
+        Version = "v1",
+        Title = "APICatalogo",
+        Description = "Catálogo de Produtos e Categorias",
+        TermsOfService = new Uri("https://talita.net/terms"), //termo de licenca com endereco ficticio aq
+        Contact = new OpenApiContact()
         {
-            new OpenApiSecurityScheme()
-            {
-                Reference = new OpenApiReference()
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                    //aq estao os requerimentos, que é so que o security deve ser scheme e o id bearer
-                }
-            },
-            new string[] {}
+            //td de ficticio tbm
+            Name = "talita",
+            Email = "talita@gmail.com",
+            Url = new Uri("https://talita.net")
+        },
+        License = new OpenApiLicense()
+        {
+            Name = "Usar sobre LICX",
+            Url = new Uri("https://talita.net/license")
         }
     });
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"; //definindo o nome do arquivo que quero gerar. a partir do nome do executavel da minha aplicacao (que é APICatalogo) ele vai gerar o nome do arquivo XML. no caso aqui vai ficar APICatalogo.xml
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile); //aqui ta definindo o caminho onde esse arquivo xml sera armazenado 
+    c.IncludeXmlComments(xmlPath); //aqui ele vai ler e injetar os comentarios xmls lidos a partir do nosso projeto nesse arquivo
+
+
+    // c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    // {
+    //     Name = "Authorization",
+    //     Type = SecuritySchemeType.ApiKey,
+    //     Scheme = "Bearer",
+    //     BearerFormat = "JWT",
+    //     In = ParameterLocation.Header,
+    //     Description = "Header de autorização JWT usando o esquema Bearer. \r\n\r\nInforme: 'Bearer:'[espaço] e o seu token.\r\n\r\bExemplo: \'Bearer: 12345abcdef\'"
+    // }); //aq definimos o esquema de segurança. Esses atributos ai foram tirados da documentaçao do proprio swagger
+    // c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    // {
+    //     {
+    //         new OpenApiSecurityScheme()
+    //         {
+    //             Reference = new OpenApiReference()
+    //             {
+    //                 Type = ReferenceType.SecurityScheme,
+    //                 Id = "Bearer"
+    //                 //aq estao os requerimentos, que é so que o security deve ser scheme e o id bearer
+    //             }
+    //         },
+    //         new string[] {}
+    //     }
+    // });
 });
 
 string mySqlConnectionStr = builder.Configuration.GetConnectionString("DefaultConnection"); //defaultconnection é o nome da string de conexao que eu defini no appsettings.json
@@ -86,9 +112,14 @@ builder.Services.AddApiVersioning(options =>
     options.DefaultApiVersion = new ApiVersion(1, 0); //define qual é a versao padrao 
     options.ReportApiVersions =
         true; //permite informar no responde do request a informaçao de compatibilidade de versao
-    
+    options.ApiVersionReader = new HeaderApiVersionReader("x-api-version"); //especifica a api por meio do header do cabeçalho http, evitando assim que fiquemos poluindo a url. 
 });
-
+builder.Services.AddVersionedApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    //antes de eu adicionar esse trecho de código o swagger tava dando problema e não tava abrindo alegando que o erro era por conta de ter dois controllers com a "mesma rota" (TesteV1 e TesteV2)
+    //colocando esse trecho de código um campo irá aparecer no swagger independente da forma que você escolheu para fazer o versionamento e você poderá digitar a versão nesse campo, mesmo onde você não versionou ele aparece, mas é só ignorar.
+});
 
 
 //builder.Services.AddScoped<ApiLoggingFilter>(); //configurei o servico com addscoped, que garante que o serviço vai ser criado uma única vez por requisição, entao cada requisicao obtem uma nova instancia do nosso filtro.
@@ -128,7 +159,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "APICatalogo");
+    });
 }
 
 app.ConfigureExceptionHandler(); //adicionando o middleware de tratamento de erros 

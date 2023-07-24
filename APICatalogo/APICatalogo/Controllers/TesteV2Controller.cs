@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace APICatalogo.Controllers
 {
     [ApiVersion("2.0")]
-    [Route("api/v{v:apiVersion}/teste")] //note q aq o template de rota ta padrao em relacao ao outro controlador teste
+    [Route("api/teste")] //note q aq o template de rota ta padrao em relacao ao outro controlador teste
     [ApiController]
     public class TesteV2Controller : ControllerBase
     {

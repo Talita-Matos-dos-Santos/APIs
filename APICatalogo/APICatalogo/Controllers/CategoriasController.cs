@@ -17,8 +17,9 @@ using Newtonsoft.Json;
 
 namespace APICatalogo.Controllers
 {
+    [Produces("application/json")]
     //[Authorize(AuthenticationSchemes = "Bearer")] //sem colocar isso aq qualquer um vai poder fazer requisicoes pra minha api de categoria
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] //na aula de swagger ele mostrou q tava assim, mas em momento nenhum anteriormente ele tinha colocado
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] //na aula de swagger ele mostrou q tava assim, mas em momento nenhum anteriormente ele tinha colocado
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriasController : ControllerBase
@@ -67,7 +68,15 @@ namespace APICatalogo.Controllers
 
         }
 
+        ///<summary>
+        /// Obtem uma Categoria pelo seu Id
+        /// </summary>
+        /// <param name="id">codigo do categoria</param>
+        /// <returns>Objetos Categoria</returns>
+        /// 
         [HttpGet("{id:int}", Name = "ObterCategoria")]
+        [ProducesResponseType(typeof(ProdutoDTO), StatusCodes.Status200OK)] // Se estiver retornando o objeto ProdutoDTO é pq deu certo e aí retorna o codigo de status 200 ok tambem
+        [ProducesResponseType(StatusCodes.Status404NotFound)] //Se não estiver retornando, retorna o código de status 404 not found, pq de certo não vai ter encontrado o id e por isso caiu no not found 
         public async Task<ActionResult<CategoriaDTO>> Get(int id)
         {
             var categoria = await _uof.CategoriaRepository.GetById(p => p.CategoriaId == id);
@@ -80,7 +89,27 @@ namespace APICatalogo.Controllers
             return Ok(categoriaDto);
         }
 
+        
+        ///<summary>
+        /// Inclui uma nova categoria
+        /// </summary>
+        /// <remarks>
+        /// Exemplo de request:
+        /// 
+        ///     POST api/categorias
+        ///     {
+        ///         "categoriaId": 1,
+        ///         "nome": "categoria1",
+        ///         "imagemUrl": "http://teste.net/1.jpg" 
+        ///     }
+        /// </remarks>
+        /// <param name="categoriaDto">objeto categoria</param>
+        /// <returns>objeto Categoria incluida</returns>
+        /// <remarks>Retorna um objeto Categoria incluído</remarks>
+        /// 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)] //se a criacao deu bom
+        [ProducesResponseType(StatusCodes.Status400BadRequest)] //se nao criou por algum motivo
         public async Task<ActionResult> Post([FromBody]CategoriaDTO categoriaDto)
         {
             
@@ -95,6 +124,7 @@ namespace APICatalogo.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Put))] //inclui o 204 (success), 404 (not found) e 400 (bad request) e o default (error)
         public async Task<ActionResult> Put(int id, CategoriaDTO categoriaDto)
         {
             if (id != categoriaDto.CategoriaId)

@@ -244,3 +244,4 @@
 /Users/talitamatos/Documents/C#/APIs/APICatalogo/APICatalogo/bin/Debug/net6.0/System.IdentityModel.Tokens.Jwt.dll
 /Users/talitamatos/Documents/C#/APIs/APICatalogo/APICatalogo/bin/Debug/net6.0/Microsoft.AspNetCore.Mvc.Versioning.dll
 /Users/talitamatos/Documents/C#/APIs/APICatalogo/APICatalogo/bin/Debug/net6.0/Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer.dll
+/Users/talitamatos/Documents/C#/APIs/APICatalogo/APICatalogo/bin/Debug/net6.0/APICatalogo.xml

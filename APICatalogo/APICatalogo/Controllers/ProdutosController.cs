@@ -15,9 +15,10 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace APICatalogo.Controllers;
-
+[ApiConventionType(typeof(DefaultApiConventions))]
+[Produces("application/json")]
 //[Authorize(AuthenticationSchemes = "Bearer")] //sem colocar isso aq qualquer um vai poder fazer requisicoes pra minha api de produtos
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Route("api/[controller]")]
 #region explicação sobre ROUTE
 
@@ -57,6 +58,13 @@ public class ProdutosController : ControllerBase
         return produtosDto;
     }
     
+    
+    ///<summary>
+    /// Exibe uma relação dos produtos
+    /// </summary>
+    ///
+    /// <returns>Retorna uma lista de objetos Produto</returns>
+    /// api/produtos
     [HttpGet] 
     public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get([FromQuery] ProdutosParameters produtosParameters)
     {
@@ -83,6 +91,13 @@ public class ProdutosController : ControllerBase
         return produtosDto;
     }
 
+
+    ///<summary>
+    /// Obtém um produto pelo seu identificador produtoId
+    /// </summary>
+    ///<param name="id">Código do produto</param>
+    /// <returns>Um objeto Produto</returns>
+    /// api/produtos/1
     #region explicação sobre roteamento
 
     //ja nesse metodo eu inclui um parametro Id (que é o id do produto que eu quero retornar). Esse parametro vai compor com a rota padrão definida no atributo ROUTE. 
@@ -93,6 +108,7 @@ public class ProdutosController : ControllerBase
     #region explicação sobre ObterProduto
     //criei uma rota ObterProduto no método Post. Para acessar essa rota foi necessário adicionar esse Name aqui, que nada mais é que uma definição de uma rota nomeada. Ela diz que pra obter o produto pelo ID pode também usar e chamar a rota ObterProduto
     #endregion
+
     public async Task<ActionResult<ProdutoDTO>> Get(int id) 
     {
         #region QueryString e Get antigo
@@ -111,6 +127,24 @@ public class ProdutosController : ControllerBase
         return produtoDto;
     }
     
+    
+    ///<summary>
+    /// Inclui uma nova categoria
+    /// </summary>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    ///     POST api/categorias
+    ///     {
+    ///         "categoriaId": 1,
+    ///         "nome": "categoria1",
+    ///         "imagemUrl": "http://teste.net/1.jpg" 
+    ///     }
+    /// </remarks>
+    /// <param name="categoriaDto">objeto categoria</param>
+    /// <returns>objeto Categoria incluida</returns>
+    /// <remarks>Retorna um objeto Categoria incluído</remarks>
+    /// 
     [HttpPost]
     public async Task<ActionResult> Post(ProdutoDTO produtoDto)
     {
